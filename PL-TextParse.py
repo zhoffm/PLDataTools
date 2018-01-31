@@ -18,7 +18,7 @@ def get_datetime(path, data):
     while True:
         text = f.readline()
         if 'Date' in text:
-            d = datetime.strptime(text[-28:-2], '%B %d, %Y %H:%M:%S')
+            d = datetime.strptime(text[13:], '%B %d, %Y %H:%M:%S ')
             newd = d.strftime('%Y-%m-%d %H:%M:%S')
             measdata.append(newd)
             f.close()

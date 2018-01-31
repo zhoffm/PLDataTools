@@ -18,12 +18,12 @@ def get_datetime(data):
     while True:
         text = f.readline()
         if 'Date' in text:
-            d = datetime.strptime(text[-28:-2], '%B %d, %Y %H:%M:%S')
+            d = datetime.strptime(text[13:], '%B %d, %Y %H:%M:%S ')
             newd = d.strftime('%Y-%m-%d %H:%M:%S')
+            print(newd)
             measdata.append(newd)
             f.close()
             break
-
 
 def get_SBcenter(data):
     f = open(path + data, 'r')
@@ -86,9 +86,5 @@ gwriter.writerow(Headers)
 for i in datafiles:
     measdata = [i]
     get_datetime(i)
-    get_temp(i)
-    get_SBcenter(i)
-    get_FPdip(i)
-    get_SBwidth(i)
-    get_SBdelta(i)
-    gwriter.writerow(measdata)
+    # get_temp(i)
+    # gwriter.writerow(measdata)
