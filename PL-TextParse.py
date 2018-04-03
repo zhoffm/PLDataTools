@@ -41,8 +41,8 @@ class VCSEL(Measurement):
                         "SB Delta (nm)"
                         ]
 
-    def get_vcsel_data(self):
-        f = open(self.path + self.datafiles, 'r')
+    def get_vcsel_data(self, data):
+        f = open(self.path + data, 'r')
         while True:
             text = f.readline()
             if 'Average' in text:
@@ -67,8 +67,8 @@ class Spectral(Measurement):
                         "IntegratedSignal (a.u.)",
                         "FWHM (nm)"]
 
-    def get_spectral_data(self):
-        f = open(self.path + self.datafiles, 'r')
+    def get_spectral_data(self, data):
+        f = open(self.path + data, 'r')
         while True:
             text = f.readline()
             if 'Average' in text:
@@ -87,7 +87,8 @@ while True:
 
     if x == '1' or x == 'spectral' or x == 'Spectral':
         current_time = datetime.now().strftime('%Y%m%d%H%M%S')
-        spectral = Spectral("./SPECTRAL_PR03/")
+        spectral_datafile_path = input("Please input your data folder name: ")
+        spectral = Spectral(spectral_datafile_path + "/")
         spectral_data = "SpectralData_" + current_time + ".csv"
 
         with open(spectral_data, 'a', newline='') as g:
@@ -97,12 +98,13 @@ while True:
                 measdata = [i]
                 spectral.get_datetime(spectral.path, i)
                 spectral.get_temp(spectral.path, i)
-                spectral.get_spectral_data()
+                spectral.get_spectral_data(i)
                 gwriter.writerow(measdata)
         print('\nParsing complete. Returning to menu...\n')
     elif x == '2' or x == 'VCSEL' or x == 'vcsel':
         current_time = datetime.now().strftime('%Y%m%d%H%M%S')
-        VCSEL = VCSEL("./VCSEL_Text_Files/")
+        VCSEL_datafile_path = input("Please input your data folder name: ")
+        VCSEL = VCSEL(VCSEL_datafile_path + "/")
         VCSEL_data = "VCSELData_" + current_time + ".csv"
 
         with open(VCSEL_data, 'a', newline='') as h:
@@ -112,7 +114,7 @@ while True:
                 measdata = [i]
                 VCSEL.get_datetime(VCSEL.path, i)
                 VCSEL.get_temp(VCSEL.path, i)
-                VCSEL.get_vcsel_data()
+                VCSEL.get_vcsel_data(i)
                 hwriter.writerow(measdata)
         print('\nParsing complete. Returning to menu...\n')
     elif x == '3':
