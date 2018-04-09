@@ -110,26 +110,29 @@ class Spectral(Measurement):
                 return [avg_peak_wavelength, avg_peak_intensity, integrated_signal, fwhm]
 
 
-while True:
-    print('\nWelcome to PL-TextParse Test!\n')
-    print('1. Spectral\n2. VCSEL\n3. Exit')
-    x = input('Please input your measurement type: ')
+if __name__ == '__main__':
+    while True:
+        print('\nWelcome to PL-TextParse Test!\n')
+        print('1. Spectral\n2. VCSEL\n3. Exit')
+        x = input('Please input your measurement type: ')
 
-    if x == '1':
-        spectral_datafile_path = input("Please input your data folder name: ")
-        spectral = Spectral(spectral_datafile_path + "/")
+        if x == '1':
+            spectral_datafile_path = input("Please input your data folder name: ")
+            spectral = Spectral(spectral_datafile_path + "/")
+            print(spectral.check_meas_type())
 
-        spectral.write_parsed_data(spectral)
-        print('\nTest complete. Returning to menu...\n')
-    elif x == '2':
-        VCSEL_datafile_path = input("Please input your data folder name: ")
-        VCSEL = VCSEL(VCSEL_datafile_path + "/")
+            spectral.write_parsed_data(spectral)
+            print('\nTest complete. Returning to menu...\n')
+        elif x == '2':
+            VCSEL_datafile_path = input("Please input your data folder name: ")
+            VCSEL = VCSEL(VCSEL_datafile_path + "/")
+            print(VCSEL.check_meas_type())
 
-        VCSEL.write_parsed_data(VCSEL)
-        print('\nTest complete. Returning to menu...\n')
-    elif x == '3':
-        print('Exiting...')
-        break
-    else:
-        print('\nIncorrect choice. Please try again.\n')
-        pass
+            VCSEL.write_parsed_data(VCSEL)
+            print('\nTest complete. Returning to menu...\n')
+        elif x == '3':
+            print('Exiting...')
+            break
+        else:
+            print('\nIncorrect choice. Please try again.\n')
+            pass
