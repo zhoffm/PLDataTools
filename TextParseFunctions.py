@@ -8,13 +8,12 @@ class Measurement:
     @staticmethod
     def check_meas_type(path):
         dir_list = listdir(path)
-        print(dir_list)
         if '_spm' in dir_list[0]:
             return 'Spectral'
         elif '_vsm' in dir_list[0]:
             return 'VCSEL'
         else:
-            raise Exception('Measurement Type is not VCSEL or Spectral. Are you in the right directory?')
+            raise ValueError('Measurement Type is not VCSEL or Spectral. Are you in the right directory?')
 
     @staticmethod
     def get_temp(path, raw_data):
