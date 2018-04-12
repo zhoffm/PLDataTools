@@ -11,7 +11,7 @@ class App:
         self.meas_type = Measurement()
         self.master = master
         self.master.title("PL-TextParse")
-        self.master.iconbitmap('C:/Users/zhoffman/PythonProjects/PLDataTools/assets/icons/pl_icon.ico')
+        self.master.iconbitmap('./assets/icons/pl_icon.ico')
         self.master.geometry('500x150')
 
         self.menubar = Menu(master)
