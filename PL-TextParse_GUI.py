@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import filedialog, Menu
 from tkinter.ttk import *
 from TextParseFunctions import *
+import os
 
 
 class App:
@@ -33,9 +34,12 @@ class App:
         print(self.active_folder)
 
     def folder_open(self):
-        self.active_folder = str(filedialog.askdirectory(initialdir='./'))
-        self.meas_type_check()
-        print(self.active_folder)
+        try:
+            self.active_folder = str(filedialog.askdirectory(initialdir=os.getcwd()))
+            self.meas_type_check()
+            print(self.active_folder)
+        except FileNotFoundError:
+            pass
 
     def meas_type_check(self):
         try:
