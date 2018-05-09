@@ -57,14 +57,26 @@ class App:
             self.spectral_button.config(state=DISABLED)
 
     def vcsel_data_parse(self):
-        vcsel = VCSEL(self.active_folder + '/')
-        vcsel.write_parsed_data(vcsel)
-        self.label1.config(text='VCSEL data parsing complete.')
+        if os.path.isdir(self.active_folder + '/output_data/vcsel/'):
+            vcsel = VCSEL(self.active_folder + '/output_data/vcsel/')
+            vcsel.write_parsed_data(vcsel)
+            self.label1.config(text='VCSEL data parsing complete.')
+        else:
+            os.makedirs(self.active_folder + '/output_data/vcsel/')
+            vcsel = VCSEL(self.active_folder + '/output_data/vcsel/')
+            vcsel.write_parsed_data(vcsel)
+            self.label1.config(text='VCSEL data parsing complete.')
 
     def spectral_data_parse(self):
-        spec = Spectral(self.active_folder + '/')
-        spec.write_parsed_data(spec)
-        self.label1.config(text='Spectral data parsing complete.')
+        if os.path.isdir(self.active_folder + '/output_data/spectral/'):
+            spec = Spectral(self.active_folder + '/output_data/spectral/')
+            spec.write_parsed_data(spec)
+            self.label1.config(text='Spectral data parsing complete.')
+        else:
+            os.makedirs(self.active_folder + '/output_data/spectral/')
+            spec = Spectral(self.active_folder + '/output_data/spectral/')
+            spec.write_parsed_data(spec)
+            self.label1.config(text='Spectral data parsing complete.')
 
 
 root = Tk()
