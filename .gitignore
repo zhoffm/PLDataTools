@@ -6,7 +6,6 @@ __pycache__/
 Spectral_TestData/
 VCSEL_TestData/
 PL-TextParse_GUI.spec
-SpectralData_20180509173147.csv
 build/
 dist/
 output_data/

@@ -43,7 +43,7 @@ class Measurement:
 
     @staticmethod
     def write_parsed_data(meas_type):
-        with open(meas_type.output_filename, 'a', newline='') as h:
+        with open("./output_data/" + meas_type.output_filename, 'a', newline='') as h:
             hwriter = csv.writer(h)
             hwriter.writerow(meas_type.headers)
             for file in meas_type.datafiles:
