@@ -74,8 +74,8 @@ class VCSEL(Measurement):
         while True:
             text = f.readline()
             if 'Average' in text:
-                sb_center = text[18:23]
-                fp_dip = text[32:37]
+                sb_center = text[17:23]
+                fp_dip = text[31:37]
                 sb_width = text[46:51]
                 sb_delta = text[60:65]
                 f.close()
@@ -101,7 +101,7 @@ class Spectral(Measurement):
         while True:
             text = f.readline()
             if 'Average' in text:
-                avg_peak_wavelength = text[18:23]
+                avg_peak_wavelength = text[17:23]
                 avg_peak_intensity = text[30:35]
                 integrated_signal = text[44:49]
                 fwhm = text[61:65]
@@ -118,14 +118,14 @@ if __name__ == '__main__':
         if x == '1':
             spectral_datafile_path = input("Please input your data folder name: ")
             spectral = Spectral(spectral_datafile_path + "/")
-            print(spectral.check_meas_type())
+            print(spectral.check_meas_type(spectral_datafile_path + "/"))
 
             spectral.write_parsed_data(spectral)
             print('\nTest complete. Returning to menu...\n')
         elif x == '2':
             VCSEL_datafile_path = input("Please input your data folder name: ")
             VCSEL = VCSEL(VCSEL_datafile_path + "/")
-            print(VCSEL.check_meas_type())
+            print(VCSEL.check_meas_type(VCSEL_datafile_path + '/'))
 
             VCSEL.write_parsed_data(VCSEL)
             print('\nTest complete. Returning to menu...\n')

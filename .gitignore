@@ -9,3 +9,4 @@ PL-TextParse_GUI.spec
 build/
 dist/
 output_data/
+build.bat
