@@ -22,7 +22,8 @@ class Measurement:
         while True:
             text = f.readline()
             if 'Temperature' in text:
-                temp = text[-7:-3]
+                parsed_text = [i.strip() for i in text.split()]
+                temp = parsed_text[2]
                 f.close()
                 return temp
 
@@ -32,7 +33,9 @@ class Measurement:
         while True:
             text = f.readline()
             if 'Date' in text:
-                d = datetime.strptime(text[13:], '%B %d, %Y %H:%M:%S ')
+                parsed_text = [i.strip() for i in text.split()]
+                raw_date = ' '.join(parsed_text[-4:])
+                d = datetime.strptime(raw_date, '%B %d, %Y %H:%M:%S ')
                 newd = d.strftime('%Y-%m-%d %H:%M:%S')
                 f.close()
                 return newd
@@ -75,12 +78,9 @@ class VCSEL(Measurement):
         while True:
             text = f.readline()
             if 'Average' in text:
-                sb_center = text[18:23]
-                fp_dip = text[32:37]
-                sb_width = text[46:51]
-                sb_delta = text[60:65]
+                parsed_text = [i.strip() for i in text.split()]
                 f.close()
-                return [sb_center, fp_dip, sb_width, sb_delta]
+                return [parsed_text[2], parsed_text[4], parsed_text[6], parsed_text[8]]
 
 
 class Spectral(Measurement):
@@ -102,12 +102,9 @@ class Spectral(Measurement):
         while True:
             text = f.readline()
             if 'Average' in text:
-                avg_peak_wavelength = text[18:23]
-                avg_peak_intensity = text[30:35]
-                integrated_signal = text[44:49]
-                fwhm = text[61:65]
+                parsed_text = [i.strip() for i in text.split()]
                 f.close()
-                return [avg_peak_wavelength, avg_peak_intensity, integrated_signal, fwhm]
+                return [parsed_text[2], parsed_text[4], parsed_text[6], parsed_text[8]]
 
 
 while True:
