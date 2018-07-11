@@ -10,6 +10,10 @@ vsm_path = './VCSEL_TestData/'
 test_vsm_file = 'GA07-1719C_05_vsm.txt'
 vsm = VCSEL(vsm_path)
 
+tool_test_path = './Tool_TestData/'
+rpm2000_test_file = 'rpm2000_GA01-17002C_vsm.txt'
+rpmBlue_test_file = 'rpmBlue_GA01-17002C_vsm.txt'
+
 
 class TestMeasurement(TestCase):
     def test_check_meas_type(self):
@@ -22,16 +26,34 @@ class TestMeasurement(TestCase):
             'VCSEL'
         )
 
+    def test_check_tool_type(self):
+        self.assertEqual(
+            Measurement.check_tool_type(tool_test_path, rpm2000_test_file),
+            '2000'
+        )
+        self.assertEqual(
+            Measurement.check_tool_type(tool_test_path, rpmBlue_test_file),
+            'blue'
+        )
+
     def test_get_recipe_name(self):
         self.assertEqual(
             Measurement.get_recipe_name(vsm_path, test_vsm_file),
             'reflectance_6inch_940_PR03.rcf'
+        )
+        self.assertEqual(
+            Measurement.get_recipe_name(spm_path, test_spm_file),
+            'GA07-812B.rcf'
         )
 
     def test_get_datetime(self):
         self.assertEqual(
             Measurement.get_datetime(vsm_path, test_vsm_file),
             '2017-11-30 17:20:49'
+        )
+        self.assertEqual(
+            Measurement.get_datetime(spm_path, test_spm_file),
+            '2017-11-28 11:31:58'
         )
 
     def test_get_parameters(self):
@@ -44,27 +66,35 @@ class TestMeasurement(TestCase):
             ['938.8', '811.2', '1067.4', '0.120', '300g/mm-760', 'CCD1024TE', 'None', 'x1', 'G300-CCD.cal']
         )
         self.assertEqual(
+            Measurement.get_parameters(Measurement.scan_params, spm_path, test_spm_file),
+            ['150.0', '148.0', '2.0', '30', '28.5']
+        )
+        self.assertEqual(
+            Measurement.get_parameters(Measurement.wave_params, spm_path, test_spm_file),
+            ['925.7', '798.1', '1054.4', '0.080', '300g/mm-760', 'CCD1024TE', 'LP570', 'x1', '(none)']
+        )
+        self.assertEqual(
             Measurement.get_parameters(Measurement.laser_params, spm_path, test_spm_file),
             ['OBIS532', '532.0', '0.999']
         )
 
-    def test_get_scan_parameters(self):
-        self.assertEqual(
-            Measurement.get_scan_parameters(vsm_path, test_vsm_file),
-            ['150.0', '148.0', '2.0', '40', '29.0']
-        )
-
-    def test_get_wavelength_parameters(self):
-        self.assertEqual(
-            Measurement.get_wavelength_parameters(vsm_path, test_vsm_file),
-            ['938.8', '811.2', '1067.4', '0.120', '300g/mm-760', 'CCD1024TE', 'None', 'x1', 'G300-CCD.cal']
-        )
-
-    def test_get_laser_parameters(self):
-        self.assertEqual(
-            Measurement.get_laser_parameters(spm_path, test_spm_file),
-            ['OBIS532', '532.0', '0.999']
-        )
+    # def test_get_scan_parameters(self):
+    #     self.assertEqual(
+    #         Measurement.get_scan_parameters(vsm_path, test_vsm_file),
+    #         ['150.0', '148.0', '2.0', '40', '29.0']
+    #     )
+    #
+    # def test_get_wavelength_parameters(self):
+    #     self.assertEqual(
+    #         Measurement.get_wavelength_parameters(vsm_path, test_vsm_file),
+    #         ['938.8', '811.2', '1067.4', '0.120', '300g/mm-760', 'CCD1024TE', 'None', 'x1', 'G300-CCD.cal']
+    #     )
+    #
+    # def test_get_laser_parameters(self):
+    #     self.assertEqual(
+    #         Measurement.get_laser_parameters(spm_path, test_spm_file),
+    #         ['OBIS532', '532.0', '0.999']
+    #     )
 
     def test_get_current_datetime(self):
         self.assertEqual(

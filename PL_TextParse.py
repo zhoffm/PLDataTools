@@ -16,10 +16,12 @@ def is_number(s):
 
 
 class Measurement:
-
     scan_params = ['Wafer size', 'Scan diameter', 'Resolution', 'Scan rate', 'Temperature']
     wave_params = ['Center', 'Range', 'Slit width', 'Grating', 'Detector', 'Filter', 'Gain', 'Calibration']
     laser_params = ['Name', 'Wavelength', 'Power']
+
+    def __init__(self):
+        self.output_path = './output_data/'
 
     @staticmethod
     def get_current_datetime():
@@ -35,6 +37,15 @@ class Measurement:
             return 'VCSEL'
         else:
             raise Exception('Measurement Type is not VCSEL or Spectral. Are you in the right directory?')
+
+    @staticmethod
+    def check_tool_type(path, raw_data):
+        with open(path + raw_data, 'r') as f:
+            for count, line in enumerate(f):
+                if 'ACCENT' in line:
+                    return '2000'
+                elif 'Nanometrics' in line:
+                    return 'blue'
 
     @staticmethod
     def get_recipe_name(path, raw_data):
@@ -71,23 +82,10 @@ class Measurement:
                                 params.append(parsed_text[semi_index + 1])
         return params
 
-# Need to readjust this method to accomodate all of the extra data being added to the output
-    @staticmethod
-    def write_parsed_data(meas_type):
-        with open(meas_type.output_filename, 'a', newline='') as h:
-            hwriter = csv.writer(h)
-            hwriter.writerow(meas_type.headers)
-            for file in meas_type.datafiles:
-                measdata = [
-                    file,
-                    meas_type.get_datetime(meas_type.path, file),
-                    meas_type.get_temp(meas_type.path, file)
-                ] + meas_type.get_data(file)
-                hwriter.writerow(measdata)
-
 
 class VCSEL(Measurement):
     def __init__(self, path):
+        super().__init__()
         self.path = path
         self.output_filename = "VCSELData_" + self.get_current_datetime() + ".csv"
         self.datafiles = listdir(self.path)
@@ -100,7 +98,8 @@ class VCSEL(Measurement):
                         "Scan Rate",
                         "Temperature (degC)",
                         "Center Wavelength (nm)",
-                        "Wavelength Range (nm)",
+                        "Wavelength Range - Low (nm)",
+                        "Wavelength Range - High (nm)",
                         "Slit Width (mm)",
                         "Grating (g/mm)",
                         "Detector",
@@ -115,15 +114,37 @@ class VCSEL(Measurement):
 
     def get_data(self, raw_data):
         with open(self.path + raw_data, 'r') as f:
-            for count, line in enumerate(f):
-                if 'Average' in line:
-                    parsed_text = [i.strip() for i in line.split()]
-                    return [parsed_text[2], parsed_text[4], parsed_text[6], parsed_text[8]]
+            if self.check_tool_type(self.path, raw_data) == 'blue':
+                for count, line in enumerate(f):
+                    if 'Average' in line:
+                        parsed_text = [i.strip() for i in line.split()]
+                        return [parsed_text[2], parsed_text[4], parsed_text[6], parsed_text[8]]
+            elif self.check_tool_type(self.path, raw_data) == '2000':
+                for count, line in enumerate(f):
+                    if 'Average' in line:
+                        parsed_text = [i.strip() for i in line.split()]
+                        return [parsed_text[6], parsed_text[12], parsed_text[8], parsed_text[14]]
+
+    def write_parsed_data(self):
+        with open(self.output_path + self.output_filename, 'a', newline='') as h:
+            hwriter = csv.writer(h)
+            hwriter.writerow(self.headers)
+            for file in self.datafiles:
+                measdata = [
+                               file,
+                               self.get_recipe_name(self.path, file),
+                               self.get_datetime(self.path, file)
+                           ] \
+                           + self.get_parameters(self.scan_params, self.path, file) \
+                           + self.get_parameters(self.wave_params, self.path, file) \
+                           + self.get_data(file)
+                hwriter.writerow(measdata)
 
 
 class Spectral(Measurement):
 
     def __init__(self, path):
+        super().__init__()
         self.path = path
         self.output_filename = "SpectralData_" + self.get_current_datetime() + ".csv"
         self.datafiles = listdir(self.path)
@@ -136,7 +157,8 @@ class Spectral(Measurement):
                         "Scan Rate",
                         "Temperature (degC)",
                         "Center Wavelength (nm)",
-                        "Wavelength Range (nm)",
+                        "Wavelength Range - Low (nm)",
+                        "Wavelength Range - High (nm)",
                         "Slit Width (mm)",
                         "Grating (g/mm)",
                         "Detector",
@@ -158,7 +180,25 @@ class Spectral(Measurement):
                     parsed_text = [i.strip() for i in line.split()]
                     return [parsed_text[2], parsed_text[4], parsed_text[6], parsed_text[8]]
 
+    def write_parsed_data(self):
+        with open(self.output_path + self.output_filename, 'a', newline='') as h:
+            hwriter = csv.writer(h)
+            hwriter.writerow(self.headers)
+            for file in self.datafiles:
+                measdata = [
+                               file,
+                               self.get_recipe_name(self.path, file),
+                               self.get_datetime(self.path, file)
+                           ] \
+                           + self.get_parameters(self.scan_params, self.path, file) \
+                           + self.get_parameters(self.wave_params, self.path, file) \
+                           + self.get_parameters(self.laser_params, self.path, file) \
+                           + self.get_data(file)
+                hwriter.writerow(measdata)
+
+
 # ##Archived Methods##
+# @staticmethod
 # def get_scan_parameters(path, raw_data):
 #     scan_params = []
 #     for param in ['Wafer size', 'Scan diameter', 'Resolution', 'Scan rate', 'Temperature']:
@@ -170,6 +210,7 @@ class Spectral(Measurement):
 #                     scan_params.append(parsed_text[semi_index + 1])
 #     return scan_params
 #
+# @staticmethod
 # def get_wavelength_parameters(path, raw_data):
 #     wave_params = []
 #     for param in ['Center', 'Range', 'Slit width', 'Grating', 'Detector', 'Filter', 'Gain', 'Calibration']:
@@ -183,6 +224,7 @@ class Spectral(Measurement):
 #                             wave_params.append(parsed_text[semi_index + 1])
 #     return wave_params
 #
+# @staticmethod
 # def get_laser_parameters(path, raw_data):
 #     laser_params = []
 #     for param in ['Name', 'Wavelength', 'Power']:
@@ -198,5 +240,19 @@ class Spectral(Measurement):
 
 
 if __name__ == '__main__':
-    v_meas = VCSEL('./VCSEL_TestData/')
-    s_meas = Spectral('./Spectral_TestData/')
+    spm_path = './Spectral_TestData/'
+    test_spm_file = 'GA07-812B_03_spm.txt'
+    s_meas = Spectral(spm_path)
+
+    vsm_path = './VCSEL_TestData/'
+    test_vsm_file = 'GA07-1719C_05_vsm.txt'
+    v_meas = VCSEL(vsm_path)
+
+    tool_test_path = './Tool_TestData/'
+    rpm2000_test_file = 'rpm2000_GA01-17002C_vsm.txt'
+    rpmBlue_test_file = 'rpmBlue_GA01-17002C_vsm.txt'
+    tool_test = VCSEL(tool_test_path)
+
+    v_meas.write_parsed_data()
+    # print(s_meas.get_data(test_spm_file))
+

@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import filedialog, Menu
 from tkinter.ttk import *
-from TextParseFunctions import *
+from PL_TextParse import *
 import os
 
 
@@ -44,11 +44,11 @@ class App:
     def meas_type_check(self):
         try:
             if self.meas_type.check_meas_type(self.active_folder) == 'Spectral':
-                self.label1.config(text='Spectral Measurement Loaded from ' + self.active_folder)
+                self.label1.config(text='Spectral Data Folder Loaded')
                 self.spectral_button.config(state=NORMAL)
                 self.vcsel_button.config(state=DISABLED)
             elif self.meas_type.check_meas_type(self.active_folder) == 'VCSEL':
-                self.label1.config(text='VCSEL Measurement Loaded from ' + self.active_folder)
+                self.label1.config(text='VCSEL Data Folder Loaded')
                 self.spectral_button.config(state=DISABLED)
                 self.vcsel_button.config(state=NORMAL)
         except ValueError:
@@ -73,14 +73,14 @@ class App:
     def vcsel_data_parse(self):
         if os.path.isdir('./output_data/'):
             vcsel = VCSEL(self.active_folder)
-            vcsel.write_parsed_data(vcsel)
+            vcsel.write_parsed_data()
             self.label1.config(text='VCSEL data parsing complete.')
             self.spectral_button.config(state=DISABLED)
             self.vcsel_button.config(state=DISABLED)
         else:
             os.makedirs('./output_data/')
             vcsel = VCSEL(self.active_folder)
-            vcsel.write_parsed_data(vcsel)
+            vcsel.write_parsed_data()
             self.label1.config(text='VCSEL data parsing complete.')
             self.spectral_button.config(state=DISABLED)
             self.vcsel_button.config(state=DISABLED)
@@ -88,14 +88,14 @@ class App:
     def spectral_data_parse(self):
         if os.path.isdir('./output_data/'):
             spec = Spectral(self.active_folder)
-            spec.write_parsed_data(spec)
+            spec.write_parsed_data()
             self.label1.config(text='Spectral data parsing complete.')
             self.spectral_button.config(state=DISABLED)
             self.vcsel_button.config(state=DISABLED)
         else:
             os.makedirs('./output_data/')
             spec = Spectral(self.active_folder)
-            spec.write_parsed_data(spec)
+            spec.write_parsed_data()
             self.label1.config(text='Spectral data parsing complete.')
             self.spectral_button.config(state=DISABLED)
             self.vcsel_button.config(state=DISABLED)

@@ -5,8 +5,10 @@
 __pycache__/
 Spectral_TestData/
 VCSEL_TestData/
-PL-TextParse_GUI.spec
+PL_TextParse_GUI.spec
 build/
 dist/
-output_data/
 build.bat
+2018-06-20_NewStringParsingIdea_From_Ashwini.py
+tests.py
+TextParseFunctions.py

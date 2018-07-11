@@ -1,3 +1,6 @@
+# work on static methods so they don't need to be called so frequently.
+# working on looping while list is under a certain length.
+
 from os import listdir
 import csv
 from datetime import datetime
@@ -8,42 +11,98 @@ class Measurement:
     @staticmethod
     def check_meas_type(path):
         dir_list = listdir(path)
+        print(dir_list)
         if '_spm' in dir_list[0]:
             return 'Spectral'
         elif '_vsm' in dir_list[0]:
             return 'VCSEL'
         else:
-            raise ValueError('Measurement Type is not VCSEL or Spectral. Are you in the right directory?')
+            raise Exception('Measurement Type is not VCSEL or Spectral. Are you in the right directory?')
 
     @staticmethod
-    def get_temp(path, raw_data):
-        f = open(path + raw_data, 'r')
-        while True:
-            text = f.readline()
-            if 'Temperature' in text:
-                temp = text[-7:-3]
-                f.close()
-                return temp
+    def get_recipe_name(path, raw_data):
+        with open(path + raw_data, 'r') as f:
+            for count, line in enumerate(f):
+                if 'Recipe' in line:
+                    parsed_text = [i.strip() for i in line.split()]
+                    recipe = parsed_text[2]
+                    return recipe
 
     @staticmethod
     def get_datetime(path, raw_data):
-        f = open(path + raw_data, 'r')
-        while True:
-            text = f.readline()
-            if 'Date' in text:
-                d = datetime.strptime(text[13:], '%B %d, %Y %H:%M:%S ')
-                newd = d.strftime('%Y-%m-%d %H:%M:%S')
-                f.close()
-                return newd
+        with open(path + raw_data, 'r') as f:
+            for count, line in enumerate(f):
+                if 'Date' in line:
+                    parsed_text = [i.strip() for i in line.split()]
+                    raw_date = ' '.join(parsed_text[-4:])
+                    d = datetime.strptime(raw_date, '%B %d, %Y %H:%M:%S')
+                    newd = d.strftime('%Y-%m-%d %H:%M:%S')
+                    return newd
+
+# need to modify for multiple word identifiers. probably split if statement.
+    @staticmethod
+    def get_scan_parameters(path, raw_data):
+        scan_params = []
+        with open(path + raw_data, 'r') as f:
+            while len(scan_params) < 5:
+                print(len(scan_params))
+                for count, line in enumerate(f):
+                        if (
+                                'Wafer size' or
+                                'Scan diameter' or
+                                'Resolution' or
+                                'Scan rate' or
+                                'Temperature'
+                        ) in line:
+                            print(line)
+                            parsed_text = [i.strip() for i in line.split()]
+                            scan_params.append(parsed_text[2])
+            return scan_params
+
+    @staticmethod
+    def get_wavelength_parameters(path, raw_data):
+        wave_params = []
+        with open(path + raw_data, 'r') as f:
+            for count, line in enumerate(f):
+                if 'Range' in line:
+                    parsed_text = [i.strip() for i in line.split()]
+                    wave_params.append(f"{parsed_text[2]}-{parsed_text[4]}")
+                elif (
+                        'Center' or
+                        'Slit width' or
+                        'Grating' or
+                        'Detector' or
+                        'Filter' or
+                        'Gain' or
+                        'Calibration'
+                ) in line:
+                    parsed_text = [i.strip() for i in line.split()]
+                    wave_params.append(parsed_text[2])
+                    return wave_params
+
+    @staticmethod
+    def get_laser_parameters(path, raw_data):
+        laser_params = []
+        with open(path + raw_data, 'r') as f:
+            for count, line in enumerate(f):
+                if (
+                        'Name' or
+                        'Wavelength' or
+                        'Power'
+                ) in line:
+                    parsed_text = [i.strip() for i in line.split()]
+                    laser_params.append(parsed_text[2])
+                    return laser_params
 
     @staticmethod
     def get_current_datetime():
         current_time = datetime.now().strftime('%Y%m%d%H%M%S')
         return current_time
 
+# Need to readjust this method to accomodate all of the extra data being added to the output
     @staticmethod
     def write_parsed_data(meas_type):
-        with open("./output_data/" + meas_type.output_filename, 'a', newline='') as h:
+        with open(meas_type.output_filename, 'a', newline='') as h:
             hwriter = csv.writer(h)
             hwriter.writerow(meas_type.headers)
             for file in meas_type.datafiles:
@@ -61,8 +120,21 @@ class VCSEL(Measurement):
         self.output_filename = "VCSELData_" + self.get_current_datetime() + ".csv"
         self.datafiles = listdir(self.path)
         self.headers = ["FileName",
+                        "Recipe",
                         "Measurement DateTime",
+                        "Wafer Size (mm)",
+                        "Scan Diameter (mm)",
+                        "Resolution (mm)",
+                        "Scan Rate",
                         "Temperature (degC)",
+                        "Center Wavelength (nm)",
+                        "Wavelength Range (nm)",
+                        "Slit Width (mm)",
+                        "Grating (g/mm)",
+                        "Detector",
+                        "Filter",
+                        "Gain",
+                        "Calibration",
                         "SB Center (nm)",
                         "F-P Dip (nm)",
                         "SB Width (nm)",
@@ -70,16 +142,11 @@ class VCSEL(Measurement):
                         ]
 
     def get_data(self, raw_data):
-        f = open(self.path + raw_data, 'r')
-        while True:
-            text = f.readline()
-            if 'Average' in text:
-                sb_center = text[17:23]
-                fp_dip = text[31:37]
-                sb_width = text[46:51]
-                sb_delta = text[60:65]
-                f.close()
-                return [sb_center, fp_dip, sb_width, sb_delta]
+        with open(self.path + raw_data, 'r') as f:
+            for count, line in enumerate(f):
+                if 'Average' in line:
+                    parsed_text = [i.strip() for i in line.split()]
+                    return [parsed_text[2], parsed_text[4], parsed_text[6], parsed_text[8]]
 
 
 class Spectral(Measurement):
@@ -89,49 +156,40 @@ class Spectral(Measurement):
         self.output_filename = "SpectralData_" + self.get_current_datetime() + ".csv"
         self.datafiles = listdir(self.path)
         self.headers = ["FileName",
+                        "Recipe",
                         "Measurement DateTime",
+                        "Wafer Size (mm)",
+                        "Scan Diameter (mm)",
+                        "Resolution (mm)",
+                        "Scan Rate",
                         "Temperature (degC)",
+                        "Center Wavelength (nm)",
+                        "Wavelength Range (nm)",
+                        "Slit Width (mm)",
+                        "Grating (g/mm)",
+                        "Detector",
+                        "Filter",
+                        "Gain",
+                        "Calibration",
+                        "Laser Name",
+                        "Laser Wavelength (nm)",
+                        "Laser Power (mW)",
                         "AvgPeakWavelength (nm)",
                         "AvgPeakIntensity (V)",
                         "IntegratedSignal (a.u.)",
                         "FWHM (nm)"]
 
     def get_data(self, raw_data):
-        f = open(self.path + raw_data, 'r')
-        while True:
-            text = f.readline()
-            if 'Average' in text:
-                avg_peak_wavelength = text[17:23]
-                avg_peak_intensity = text[30:35]
-                integrated_signal = text[44:49]
-                fwhm = text[61:65]
-                f.close()
-                return [avg_peak_wavelength, avg_peak_intensity, integrated_signal, fwhm]
+        with open(self.path + raw_data, 'r') as f:
+            for count, line in enumerate(f):
+                if 'Average' in line:
+                    parsed_text = [i.strip() for i in line.split()]
+                    return [parsed_text[2], parsed_text[4], parsed_text[6], parsed_text[8]]
 
 
 if __name__ == '__main__':
-    while True:
-        print('\nWelcome to PL-TextParse Test!\n')
-        print('1. Spectral\n2. VCSEL\n3. Exit')
-        x = input('Please input your measurement type: ')
+    s_meas = Spectral('./Spectral_TestData/')
+    print(s_meas.get_scan_parameters('./Spectral_TestData/', 'GA07-812B_03_spm.txt'))
 
-        if x == '1':
-            spectral_datafile_path = input("Please input your data folder name: ")
-            spectral = Spectral(spectral_datafile_path + "/")
-            print(spectral.check_meas_type(spectral_datafile_path + "/"))
-
-            spectral.write_parsed_data(spectral)
-            print('\nTest complete. Returning to menu...\n')
-        elif x == '2':
-            VCSEL_datafile_path = input("Please input your data folder name: ")
-            VCSEL = VCSEL(VCSEL_datafile_path + "/")
-            print(VCSEL.check_meas_type(VCSEL_datafile_path + '/'))
-
-            VCSEL.write_parsed_data(VCSEL)
-            print('\nTest complete. Returning to menu...\n')
-        elif x == '3':
-            print('Exiting...')
-            break
-        else:
-            print('\nIncorrect choice. Please try again.\n')
-            pass
+    # v_meas = VCSEL('./VCSEL_TestData/')
+    # v_meas.write_parsed_data(v_meas)
