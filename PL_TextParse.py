@@ -4,6 +4,7 @@
 from os import listdir
 import csv
 from datetime import datetime
+import pandas as pd
 
 
 # this is inspired by https://stackoverflow.com/questions/354038/how-do-i-check-if-a-string-is-a-number-float?rq=1
@@ -112,18 +113,29 @@ class VCSEL(Measurement):
                         "SB Delta (nm)"
                         ]
 
+    def get_data_headers(self, raw_data):
+        with open(self.path + raw_data, 'r') as f:
+            for count, line in enumerate(f):
+                if 'STATISTICS:' in line:
+                    parsed_headers = [i.strip() for i in next(f).split('  ')]
+                    parsed_headers = list(filter(None, parsed_headers))
+                    print(parsed_headers)
+                    self.headers = self.headers + parsed_headers
+                    print(self.headers)
+
     def get_data(self, raw_data):
         with open(self.path + raw_data, 'r') as f:
-            if self.check_tool_type(self.path, raw_data) == 'blue':
-                for count, line in enumerate(f):
-                    if 'Average' in line:
-                        parsed_text = [i.strip() for i in line.split()]
-                        return [parsed_text[2], parsed_text[4], parsed_text[6], parsed_text[8]]
-            elif self.check_tool_type(self.path, raw_data) == '2000':
-                for count, line in enumerate(f):
-                    if 'Average' in line:
-                        parsed_text = [i.strip() for i in line.split()]
-                        return [parsed_text[6], parsed_text[12], parsed_text[8], parsed_text[14]]
+            for count, line in enumerate(f):
+                if 'STATISTICS:' in line:
+                    parsed_headers = [i.strip() for i in next(f).split('  ')]
+                    parsed_headers = list(filter(None, parsed_headers))
+                    print(parsed_headers)
+                if 'Average' in line:
+                    parsed_text = [i.strip() for i in line.split()]
+                    parsed_text = [float(x) for x in parsed_text if x.replace('.', '', 1).replace('-', '', 1).isdigit()]
+                    print(parsed_text)
+            parsed_data_dict = dict(zip(parsed_headers, parsed_text))
+            requested_data = [parsed_data_dict]
 
     def write_parsed_data(self):
         with open(self.output_path + self.output_filename, 'a', newline='') as h:
@@ -176,9 +188,13 @@ class Spectral(Measurement):
     def get_data(self, raw_data):
         with open(self.path + raw_data, 'r') as f:
             for count, line in enumerate(f):
+                if 'STATISTICS:' in line:
+                    parsed_headers = [i.strip() for i in next(f).split('  ')]
+                    parsed_headers = list(filter(None, parsed_headers))
                 if 'Average' in line:
                     parsed_text = [i.strip() for i in line.split()]
-                    return [parsed_text[2], parsed_text[4], parsed_text[6], parsed_text[8]]
+                    parsed_text = [float(x) for x in parsed_text if x.replace('.', '', 1).replace('-', '', 1).isdigit()]
+            parsed_data_dict = dict(zip(parsed_headers, parsed_text))
 
     def write_parsed_data(self):
         with open(self.output_path + self.output_filename, 'a', newline='') as h:
@@ -249,10 +265,8 @@ if __name__ == '__main__':
     v_meas = VCSEL(vsm_path)
 
     tool_test_path = './Tool_TestData/'
-    rpm2000_test_file = 'rpm2000_GA01-17002C_vsm.txt'
-    rpmBlue_test_file = 'rpmBlue_GA01-17002C_vsm.txt'
+    rpm2000_vcsel_test_file = 'rpm2000_GA01-17002C_vsm.txt'
+    rpm2000_spectral_test_file = 'rpm2000_GA01-17118G_spm.txt'
+    rpmBlue_vcsel_test_file = 'rpmBlue_GA01-17002C_vsm.txt'
+    rpmBlue_spectral_test_file = 'rpmBlue_GA06-6376A_spm.txt'
     tool_test = VCSEL(tool_test_path)
-
-    v_meas.write_parsed_data()
-    # print(s_meas.get_data(test_spm_file))
-

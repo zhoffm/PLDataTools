@@ -28,11 +28,11 @@ class TestMeasurement(TestCase):
 
     def test_check_tool_type(self):
         self.assertEqual(
-            Measurement.check_tool_type(tool_test_path, rpm2000_test_file),
+            Measurement.check_tool_type(tool_test_path, rpm2000_vcsel_test_file),
             '2000'
         )
         self.assertEqual(
-            Measurement.check_tool_type(tool_test_path, rpmBlue_test_file),
+            Measurement.check_tool_type(tool_test_path, rpmBlue_vcsel_test_file),
             'blue'
         )
 
