@@ -37,7 +37,6 @@ class App:
         try:
             self.active_folder = str(filedialog.askdirectory(initialdir=os.getcwd())) + "/"
             self.meas_type_check()
-            print(self.active_folder)
         except FileNotFoundError:
             pass
 
@@ -51,6 +50,8 @@ class App:
                 self.label1.config(text='VCSEL Data Folder Loaded')
                 self.spectral_button.config(state=DISABLED)
                 self.vcsel_button.config(state=NORMAL)
+            else:
+                pass
         except ValueError:
             self.label1.config(text='Unknown measurement type loaded. Are you in the right directory?')
             self.vcsel_button.config(state=DISABLED)
